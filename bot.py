@@ -2,47 +2,11 @@ import yfinance as yf
 import ta
 import datetime
 import asyncio
-import json
-from telegram import Update
-from telegram.ext import ApplicationBuilder, CommandHandler, ContextTypes
-
-BOT_TOKEN = "8472815895:AAFwbXFwNSmsnZBckNtz55d_qVCacThD8e0"
-VIP_KEY = "786VIP"
-
-CHAT_FILE = "chat.json"
-chat_id = None
-
-pairs = [
-    "EURUSD=X","GBPUSD=X","USDJPY=X",
-    "AUDUSD=X","USDCAD=X","EURJPY=X","GBPJPY=X"
-]
-
-# ===== LOAD CHAT ID =====
-def load_chat():
-    global chat_id
-    try:
-        with open(CHAT_FILE,"r") as f:
-            chat_id = json.load(f)["chat_id"]
-    except:
-        chat_id = None
-
-# ===== SAVE CHAT ID =====
-def save_chat(cid):
-    with open(CHAT_FILE,"w") as f:
-        json.dump({"chat_id":cid},f)
-
-# ===== TIME FILTER =====
-def allowed_time():
-    pkt = datetime.datetime.utcnow() + …
-[2:39 am, 13/02/2026] Shoaib Bahi: import yfinance as yf
-import ta
-import datetime
-import asyncio
 from telegram import Update
 from telegram.ext import ApplicationBuilder, CommandHandler, ContextTypes
 import os
 
-BOT_TOKEN = os.getenv("BOT_TOKEN")
+BOT_TOKEN = os.getenv("8472815895:AAFwbXFwNSmsnZBckNtz55d_qVCacThD8e0")
 VIP_KEY = "786VIP"
 
 chat_id = None
@@ -155,4 +119,5 @@ async def main():
 
 
 asyncio.run(main())
+
 
