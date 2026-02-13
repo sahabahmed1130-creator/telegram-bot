@@ -2,84 +2,13 @@ import yfinance as yf
 import ta
 import datetime
 import asyncio
-import json
-from telegram import Update
-from telegram.ext import ApplicationBuilder, CommandHandler, ContextTypes
-
-BOT_TOKEN = "8472815895:AAFwbXFwNSmsnZBckNtz55d_qVCacThD8e0"
-VIP_KEY = "786VIP"
-
-CHAT_FILE = "chat.json"
-chat_id = None
-
-pairs = [
-    "EURUSD=X","GBPUSD=X","USDJPY=X",
-    "AUDUSD=X","USDCAD=X","EURJPY=X","GBPJPY=X"
-]
-
-# ===== LOAD CHAT ID =====
-def load_chat():
-    global chat_id
-    try:
-        with open(CHAT_FILE,"r") as f:
-            chat_id = json.load(f)["chat_id"]
-    except:
-        chat_id = None
-
-# ===== SAVE CHAT ID =====
-def save_chat(cid):
-    with open(CHAT_FILE,"w") as f:
-        json.dump({"chat_id":cid},f)
-
-# ===== TIME FILTER =====
-def allowed_time():
-    pkt = datetime.datetime.utcnow() + …
-[2:39 am, 13/02/2026] Shoaib Bahi: import yfinance as yf
-import ta
-import datetime
-import asyncio
-from telegram import Update
-from telegram.ext import ApplicationBuilder, CommandHandler, ContextTypes
 import os
 
-BOT_TOKEN = os.getenv("BOT_TOKEN")
-VIP_KEY = "786VIP"
-
-chat_id = None
-
-pairs = [
-    "EURUSD=X","GBPUSD=X","USDJPY=X",
-    "AUDUSD=X","USDCAD=X","EURJPY=X","GBPJPY=X"
-]
-
-
-def allowed_time():
-    pkt = datetime.datetime.utcnow() + datetime.timedelta(hours=5)
-    return 11 <= pkt.hour < 22
-
-
-def analyze_pair(pair):
-
-    try:
-        data = yf.download(pair, interval="5m", period="1d", progress=False)
-
-        if len(data) < 60:
-            return None
-
-        close = data["Close"]
-
-        ema20 = ta.trend.ema_indicator(close,20)
-        ema50 = ta.trend.ema_indicator(close,50)
-        …
-[3:03 am, 13/02/2026] Shoaib Bahi: import yfinance as yf
-import ta
-import datetime
-import asyncio
 from telegram import Update
 from telegram.ext import ApplicationBuilder, CommandHandler, ContextTypes
-import os
 
-BOT_TOKEN = os.getenv("BOT_TOKEN")
+
+BOT_TOKEN = os.getenv("8472815895:AAFwbXFwNSmsnZBckNtz55d_qVCacThD8e0")
 VIP_KEY = "786VIP"
 
 if not BOT_TOKEN:
@@ -93,32 +22,34 @@ pairs = [
 ]
 
 
+# ===== TIME FILTER =====
 def allowed_time():
     pkt = datetime.datetime.utcnow() + datetime.timedelta(hours=5)
     return 11 <= pkt.hour < 22
 
 
+# ===== ANALYSIS =====
 def analyze_pair(pair):
 
     try:
-        data = yf.download(pair, interval="5m", period="1d", progress=False, timeout=10)
+        data = yf.download(pair, interval="5m", period="1d", progress=False)
 
         if len(data) < 60:
             return None
 
         close = data["Close"]
 
-        ema20 = ta.trend.ema_indicator(close,20)
-        ema50 = ta.trend.ema_indicator(close,50)
-        rsi = ta.momentum.rsi(close,14)
+        ema20 = ta.trend.ema_indicator(close, 20)
+        ema50 = ta.trend.ema_indicator(close, 50)
+        rsi = ta.momentum.rsi(close, 14)
 
         last = len(close) - 2
 
         if ema20.iloc[last] > ema50.iloc[last] and rsi.iloc[last] > 55:
-            return ("CALL",pair.replace("=X",""))
+            return ("CALL", pair.replace("=X", ""))
 
         if ema20.iloc[last] < ema50.iloc[last] and rsi.iloc[last] < 45:
-            return ("PUT",pair.replace("=X",""))
+            return ("PUT", pair.replace("=X", ""))
 
         return None
 
@@ -127,6 +58,7 @@ def analyze_pair(pair):
         return None
 
 
+# ===== START COMMAND =====
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     global chat_id
 
@@ -137,6 +69,7 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await update.message.reply_text("❌ Wrong VIP Key")
 
 
+# ===== SIGNAL LOOP =====
 async def signal_loop(app):
 
     global chat_id
@@ -166,6 +99,7 @@ async def signal_loop(app):
                         sig = analyze_pair(p)
 
                         if sig:
+
                             msg = f"""
 🔥 ULTRA VIP SIGNAL 🔥
 
@@ -174,6 +108,7 @@ TYPE: {sig[0]}
 ENTRY: NEXT CANDLE
 EXPIRY: 5 MIN
 """
+
                             await app.bot.send_message(chat_id, msg)
                             break
 
@@ -184,6 +119,7 @@ EXPIRY: 5 MIN
             await asyncio.sleep(5)
 
 
+# ===== MAIN =====
 async def main():
 
     app = ApplicationBuilder().token(BOT_TOKEN).build()
@@ -192,8 +128,11 @@ async def main():
 
     asyncio.create_task(signal_loop(app))
 
+    print("Bot Started...")
+
     await app.run_polling()
 
 
 asyncio.run(main())
+
 
