@@ -1,4 +1,4 @@
-[2:26 am, 13/02/2026] Shoaib Bahi: import yfinance as yf
+import yfinance as yf
 import ta
 import datetime
 import asyncio
@@ -155,3 +155,4 @@ async def main():
 
 
 asyncio.run(main())
+
