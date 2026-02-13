@@ -1,4 +1,40 @@
-import yfinance as yf
+[2:26 am, 13/02/2026] Shoaib Bahi: import yfinance as yf
+import ta
+import datetime
+import asyncio
+import json
+from telegram import Update
+from telegram.ext import ApplicationBuilder, CommandHandler, ContextTypes
+
+BOT_TOKEN = "8472815895:AAFwbXFwNSmsnZBckNtz55d_qVCacThD8e0"
+VIP_KEY = "786VIP"
+
+CHAT_FILE = "chat.json"
+chat_id = None
+
+pairs = [
+    "EURUSD=X","GBPUSD=X","USDJPY=X",
+    "AUDUSD=X","USDCAD=X","EURJPY=X","GBPJPY=X"
+]
+
+# ===== LOAD CHAT ID =====
+def load_chat():
+    global chat_id
+    try:
+        with open(CHAT_FILE,"r") as f:
+            chat_id = json.load(f)["chat_id"]
+    except:
+        chat_id = None
+
+# ===== SAVE CHAT ID =====
+def save_chat(cid):
+    with open(CHAT_FILE,"w") as f:
+        json.dump({"chat_id":cid},f)
+
+# ===== TIME FILTER =====
+def allowed_time():
+    pkt = datetime.datetime.utcnow() + …
+[2:39 am, 13/02/2026] Shoaib Bahi: import yfinance as yf
 import ta
 import datetime
 import asyncio
@@ -6,7 +42,7 @@ from telegram import Update
 from telegram.ext import ApplicationBuilder, CommandHandler, ContextTypes
 import os
 
-BOT_TOKEN = os.getenv("8472815895:AAFwbXFwNSmsnZBckNtz55d_qVCacThD8e0")
+BOT_TOKEN = os.getenv("BOT_TOKEN")
 VIP_KEY = "786VIP"
 
 chat_id = None
@@ -34,6 +70,46 @@ def analyze_pair(pair):
 
         ema20 = ta.trend.ema_indicator(close,20)
         ema50 = ta.trend.ema_indicator(close,50)
+        …
+[3:03 am, 13/02/2026] Shoaib Bahi: import yfinance as yf
+import ta
+import datetime
+import asyncio
+from telegram import Update
+from telegram.ext import ApplicationBuilder, CommandHandler, ContextTypes
+import os
+
+BOT_TOKEN = os.getenv("BOT_TOKEN")
+VIP_KEY = "786VIP"
+
+if not BOT_TOKEN:
+    raise ValueError("BOT_TOKEN missing")
+
+chat_id = None
+
+pairs = [
+    "EURUSD=X","GBPUSD=X","USDJPY=X",
+    "AUDUSD=X","USDCAD=X","EURJPY=X","GBPJPY=X"
+]
+
+
+def allowed_time():
+    pkt = datetime.datetime.utcnow() + datetime.timedelta(hours=5)
+    return 11 <= pkt.hour < 22
+
+
+def analyze_pair(pair):
+
+    try:
+        data = yf.download(pair, interval="5m", period="1d", progress=False, timeout=10)
+
+        if len(data) < 60:
+            return None
+
+        close = data["Close"]
+
+        ema20 = ta.trend.ema_indicator(close,20)
+        ema50 = ta.trend.ema_indicator(close,50)
         rsi = ta.momentum.rsi(close,14)
 
         last = len(close) - 2
@@ -46,7 +122,8 @@ def analyze_pair(pair):
 
         return None
 
-    except:
+    except Exception as e:
+        print("Analyze Error:", e)
         return None
 
 
@@ -119,5 +196,3 @@ async def main():
 
 
 asyncio.run(main())
-
-
