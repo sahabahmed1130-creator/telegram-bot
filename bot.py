@@ -7,7 +7,6 @@ import os
 from telegram import Update
 from telegram.ext import ApplicationBuilder, CommandHandler, ContextTypes
 
-
 BOT_TOKEN = os.getenv("8472815895:AAFwbXFwNSmsnZBckNtz55d_qVCacThD8e0")
 VIP_KEY = "786VIP"
 
@@ -21,16 +20,13 @@ pairs = [
     "AUDUSD=X","USDCAD=X","EURJPY=X","GBPJPY=X"
 ]
 
-
-# ===== TIME FILTER =====
+# ---------- TIME FILTER ----------
 def allowed_time():
     pkt = datetime.datetime.utcnow() + datetime.timedelta(hours=5)
     return 11 <= pkt.hour < 22
 
-
-# ===== ANALYSIS =====
+# ---------- ANALYSIS ----------
 def analyze_pair(pair):
-
     try:
         data = yf.download(pair, interval="5m", period="1d", progress=False)
 
@@ -46,10 +42,10 @@ def analyze_pair(pair):
         last = len(close) - 2
 
         if ema20.iloc[last] > ema50.iloc[last] and rsi.iloc[last] > 55:
-            return ("CALL", pair.replace("=X", ""))
+            return ("CALL", pair.replace("=X",""))
 
         if ema20.iloc[last] < ema50.iloc[last] and rsi.iloc[last] < 45:
-            return ("PUT", pair.replace("=X", ""))
+            return ("PUT", pair.replace("=X",""))
 
         return None
 
@@ -57,8 +53,7 @@ def analyze_pair(pair):
         print("Analyze Error:", e)
         return None
 
-
-# ===== START COMMAND =====
+# ---------- START COMMAND ----------
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     global chat_id
 
@@ -68,17 +63,13 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     else:
         await update.message.reply_text("❌ Wrong VIP Key")
 
-
-# ===== SIGNAL LOOP =====
+# ---------- SIGNAL LOOP ----------
 async def signal_loop(app):
-
     global chat_id
     last_minute = None
 
     while True:
-
         try:
-
             if chat_id is None:
                 await asyncio.sleep(5)
                 continue
@@ -92,14 +83,12 @@ async def signal_loop(app):
             if now.minute % 5 == 4 and now.second >= 55:
 
                 if last_minute != now.minute:
-
                     last_minute = now.minute
 
                     for p in pairs:
                         sig = analyze_pair(p)
 
                         if sig:
-
                             msg = f"""
 🔥 ULTRA VIP SIGNAL 🔥
 
@@ -108,7 +97,6 @@ TYPE: {sig[0]}
 ENTRY: NEXT CANDLE
 EXPIRY: 5 MIN
 """
-
                             await app.bot.send_message(chat_id, msg)
                             break
 
@@ -118,21 +106,16 @@ EXPIRY: 5 MIN
             print("Loop Error:", e)
             await asyncio.sleep(5)
 
-
-# ===== MAIN =====
+# ---------- MAIN ----------
 async def main():
-
     app = ApplicationBuilder().token(BOT_TOKEN).build()
 
     app.add_handler(CommandHandler("start", start))
 
     asyncio.create_task(signal_loop(app))
 
-    print("Bot Started...")
+    print("Bot Running...")
 
     await app.run_polling()
 
-
 asyncio.run(main())
-
-
